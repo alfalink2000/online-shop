@@ -148,7 +148,6 @@ export const refreshProductsIfNeeded = () => {
 export const deleteProduct = (id) => {
   return async (dispatch, getState) => {
     try {
-      // Mostrar confirmación antes de eliminar
       const result = await Swal.fire({
         title: "¿Estás seguro?",
         text: "¡No podrás revertir esta acción!",
@@ -178,7 +177,9 @@ export const deleteProduct = (id) => {
       Swal.close();
 
       if (body.ok) {
-        dispatch(deleteProductAction(id));
+        // ✅ NO ELIMINAR DEL ESTADO LOCAL - SOLO RECARGAR
+        console.log("🔄 Recargando productos desde el backend...");
+        await dispatch(getProducts(true)); // Esperar a que se recarguen
 
         Swal.fire({
           icon: "success",
@@ -187,13 +188,8 @@ export const deleteProduct = (id) => {
           timer: 2000,
           showConfirmButton: false,
         });
-
-        // ✅ RECARGAR PRODUCTOS DESPUÉS DE ELIMINAR
-        setTimeout(() => {
-          dispatch(getProducts(true));
-        }, 500);
       } else {
-        // ✅ MANEJAR ERROR ESPECÍFICO DEL ÚLTIMO PRODUCTO
+        // ✅ MANEJAR ERROR - EL PRODUCTO SIGUE EN EL ESTADO
         if (body.msg && body.msg.includes("último producto")) {
           Swal.fire({
             icon: "error",
